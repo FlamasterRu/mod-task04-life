@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Threading;
+using System.IO;
+using System.Globalization;
 
 namespace cli_life
 {
@@ -47,6 +49,47 @@ namespace cli_life
             ConnectNeighbors();
             Randomize(liveDensity);
         }
+        public Board(string fileName)
+        {
+            using (StreamReader sr = new StreamReader(fileName))
+            {
+                string str;
+                str = sr.ReadLine();
+                int width = Int32.Parse(str);
+                str = sr.ReadLine();
+                int height = Int32.Parse(str);
+                str = sr.ReadLine();
+                int cellSize = Int32.Parse(str);
+
+                CellSize = cellSize;
+                Cells = new Cell[width / cellSize, height / cellSize];
+                for (int x = 0; x < Columns; x++)
+                    for (int y = 0; y < Rows; y++)
+                        Cells[x, y] = new Cell();
+                ConnectNeighbors();
+
+                str = sr.ReadToEnd();
+                str.Replace("\n", "");
+                str.Replace("\r", "");
+                int ind = 0;
+                for (int y = 0; y < Rows; ++y)
+                {
+                    for (int x = 0; x < Columns; ++x)
+                    {
+                        if (str[ind] == '*')
+                        {
+                            Cells[x, y].IsAlive = true;
+                        }
+                        if (str[ind] == ' ')
+                        {
+                            Cells[x, y].IsAlive = false;
+                        }
+                        ++ind;
+                    }
+                    ++ind;
+                }
+            }
+        }
 
         readonly Random rand = new Random();
         public void Randomize(double liveDensity)
@@ -85,6 +128,35 @@ namespace cli_life
                 }
             }
         }
+        public void saveToFile(string fileName)
+        {
+            using (StreamWriter sw = new StreamWriter(fileName))
+            {
+                string str;
+                str = Width.ToString();
+                sw.WriteLine(str);
+                str = Height.ToString();
+                sw.WriteLine(str);
+                str = CellSize.ToString();
+                sw.WriteLine(str);
+                for (int row = 0; row < Rows; row++)
+                {
+                    for (int col = 0; col < Columns; col++)
+                    {
+                        var cell = Cells[col, row];
+                        if (cell.IsAlive)
+                        {
+                            sw.Write('*');
+                        }
+                        else
+                        {
+                            sw.Write(' ');
+                        }
+                    }
+                    sw.Write('\n');
+                }
+            }
+        }
     }
     class Program
     {
@@ -96,6 +168,107 @@ namespace cli_life
                 height: 20,
                 cellSize: 1,
                 liveDensity: 0.5);
+        }
+        static private void Reset(string fileName)
+        {
+            using (StreamReader sr = new StreamReader(fileName))
+            {
+                string str = sr.ReadToEnd();
+                int i = 0;
+                while (str[i] != '{')
+                {
+                    ++i;
+                }
+                char state = 'a';
+                string paramName = "";
+                string param = "";
+                int width = 0, height = 0, cellSize = 0;
+                double liveDensity = 0;
+                while (str[i] != '}')
+                {
+                    if ((state == 'a') && (str[i] == '\"'))
+                    {
+                        state = 'p';
+                        paramName = "";
+                        ++i;
+                        continue;
+                    }
+                    else if ((state == 'p') && (str[i] == '\"'))
+                    {
+                        state = 'w';
+                        ++i;
+                        continue;
+                    }
+                    else if (state == 'p')
+                    {
+                        paramName += str[i];
+                        ++i;
+                        continue;
+                    }
+                    else if ((state == 'w') && (str[i] == ':'))
+                    {
+                        state = 'd';
+                        param = "";
+                        ++i;
+                        continue;
+                    }
+                    else if (state == 'w')
+                    {
+                        ++i;
+                        continue;
+                    }
+                    else if ((state == 'd') && (str[i] == ','))
+                    {
+                        state = 'a';
+                        if (paramName == "width")
+                        {
+                            width = Int32.Parse(param);
+                        }
+                        else if (paramName == "height")
+                        {
+                            height = Int32.Parse(param);
+                        }
+                        else if (paramName == "cellSize")
+                        {
+                            cellSize = Int32.Parse(param);
+                        }
+                        else if (paramName == "liveDensity")
+                        {
+                            liveDensity = Double.Parse(param);
+                        }
+                        ++i;
+                        continue;
+                    }
+                    else if ((state == 'd') && (str[i] != '\r') && (str[i] != '\n'))
+                    {
+                        param += str[i];
+                        ++i;
+                        continue;
+                    }
+                    ++i;
+                }
+                if (state == 'd')
+                {
+                    if (paramName == "width")
+                    {
+                        width = Int32.Parse(param);
+                    }
+                    else if (paramName == "height")
+                    {
+                        height = Int32.Parse(param);
+                    }
+                    else if (paramName == "cellSize")
+                    {
+                        cellSize = Int32.Parse(param);
+                    }
+                    else if (paramName == "liveDensity")
+                    {
+                        IFormatProvider formatter = new NumberFormatInfo { NumberDecimalSeparator = "." };
+                        liveDensity = double.Parse(param, formatter);
+                    }
+                }
+                board = new Board(width, height, cellSize, liveDensity);
+            }
         }
         static void Render()
         {
@@ -119,7 +292,7 @@ namespace cli_life
         static void Main(string[] args)
         {
             Reset();
-            while(true)
+            while (true)
             {
                 Console.Clear();
                 Render();
