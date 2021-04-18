@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Threading;
 using System.IO;
 using System.Globalization;
+using System.Numerics;
 
 namespace cli_life
 {
@@ -160,6 +161,46 @@ namespace cli_life
     }
     class Program
     {
+        static bool isBloc(List<int[]> list)
+        {
+            if (list.Count != 4)
+            {
+                return false;
+            }
+            int minx = 99999999, miny = 999999999;
+            foreach (var t in list)
+            {
+                if ((t[0] <= minx) && (t[1] <= miny))
+                {
+                    minx = t[0];
+                    miny = t[1];
+                }
+            }
+            int xR = (minx < board.Columns - 1) ? minx + 1 : 0;
+            int yB = (miny < board.Rows - 1) ? miny + 1 : 0;
+            int[] result = new int[3];
+            foreach (var t in list)
+            {
+                if ((t[0] == xR) && (t[1] == miny))
+                {
+                    result[0] = 1;
+                }
+                if ((t[0] == minx) && (t[1] == yB))
+                {
+                    result[1] = 1;
+                }
+                if ((t[0] == xR) && (t[1] == yB))
+                {
+                    result[2] = 1;
+                }
+            }
+            if ((result[0] == 1) && (result[1] == 1) && (result[2] == 1))
+            {
+                return true;
+            }
+            return false;
+        }
+
         static Board board;
         static private void Reset()
         {
@@ -289,16 +330,285 @@ namespace cli_life
                 Console.Write('\n');
             }
         }
+        static void findComb(List<int[]> list, int x, int y)
+        {
+            Queue < int[] > temp = new Queue<int[]>();
+            int[] t = new int[2];
+            t[0] = x;
+            t[1] = y;
+            temp.Enqueue(t);
+            list.Add(t);
+            while(temp.Count > 0)
+            {
+                int[] cur = temp.Dequeue();
+                int x1 = cur[0];
+                int y1 = cur[1];
+                int xL = (x1 > 0) ? x1 - 1 : board.Columns - 1;
+                int xR = (x1 < board.Columns - 1) ? x1 + 1 : 0;
+                int yT = (y1 > 0) ? y1 - 1 : board.Rows - 1;
+                int yB = (y1 < board.Rows - 1) ? y1 + 1 : 0;
+
+                if (board.Cells[xL, yT].IsAlive)
+                {
+                    int[] t1 = new int[2];
+                    t1[0] = xL;
+                    t1[1] = yT;
+                    bool flag = true;
+                    foreach (var r in list)
+                    {
+                        if ((t1[0] == r[0]) && (t1[1] == r[1]))
+                        {
+                            flag = false;
+                        }
+                    }
+                    if (flag)
+                    {
+                        list.Add(t1);
+                        temp.Enqueue(t1);
+                    }
+                }
+                if (board.Cells[x1, yT].IsAlive)
+                {
+                    int[] t1 = new int[2];
+                    t1[0] = x1;
+                    t1[1] = yT;
+                    bool flag = true;
+                    foreach (var r in list)
+                    {
+                        if ((t1[0] == r[0]) && (t1[1] == r[1]))
+                        {
+                            flag = false;
+                        }
+                    }
+                    if (flag)
+                    {
+                        list.Add(t1);
+                        temp.Enqueue(t1);
+                    }
+                }
+                if (board.Cells[xR, yT].IsAlive)
+                {
+                    int[] t1 = new int[2];
+                    t1[0] = xR;
+                    t1[1] = yT;
+                    bool flag = true;
+                    foreach (var r in list)
+                    {
+                        if ((t1[0] == r[0]) && (t1[1] == r[1]))
+                        {
+                            flag = false;
+                        }
+                    }
+                    if (flag)
+                    {
+                        list.Add(t1);
+                        temp.Enqueue(t1);
+                    }
+                }
+                if (board.Cells[xL, y1].IsAlive)
+                {
+                    int[] t1 = new int[2];
+                    t1[0] = xL;
+                    t1[1] = y1;
+                    bool flag = true;
+                    foreach (var r in list)
+                    {
+                        if ((t1[0] == r[0]) && (t1[1] == r[1]))
+                        {
+                            flag = false;
+                        }
+                    }
+                    if (flag)
+                    {
+                        list.Add(t1);
+                        temp.Enqueue(t1);
+                    }
+                }
+                if (board.Cells[xR, y1].IsAlive)
+                {
+                    int[] t1 = new int[2];
+                    t1[0] = xR;
+                    t1[1] = y1;
+                    bool flag = true;
+                    foreach (var r in list)
+                    {
+                        if ((t1[0] == r[0]) && (t1[1] == r[1]))
+                        {
+                            flag = false;
+                        }
+                    }
+                    if (flag)
+                    {
+                        list.Add(t1);
+                        temp.Enqueue(t1);
+                    }
+                }
+                if (board.Cells[xL, yB].IsAlive)
+                {
+                    int[] t1 = new int[2];
+                    t1[0] = xL;
+                    t1[1] = yB;
+                    bool flag = true;
+                    foreach (var r in list)
+                    {
+                        if ((t1[0] == r[0]) && (t1[1] == r[1]))
+                        {
+                            flag = false;
+                        }
+                    }
+                    if (flag)
+                    {
+                        list.Add(t1);
+                        temp.Enqueue(t1);
+                    }
+                }
+                if (board.Cells[x1, yB].IsAlive)
+                {
+                    int[] t1 = new int[2];
+                    t1[0] = x1;
+                    t1[1] = yB;
+                    bool flag = true;
+                    foreach (var r in list)
+                    {
+                        if ((t1[0] == r[0]) && (t1[1] == r[1]))
+                        {
+                            flag = false;
+                        }
+                    }
+                    if (flag)
+                    {
+                        list.Add(t1);
+                        temp.Enqueue(t1);
+                    }
+                }
+                if (board.Cells[xR, yB].IsAlive)
+                {
+                    int[] t1 = new int[2];
+                    t1[0] = xR;
+                    t1[1] = yB;
+                    bool flag = true;
+                    foreach (var r in list)
+                    {
+                        if ((t1[0] == r[0]) && (t1[1] == r[1]))
+                        {
+                            flag = false;
+                        }
+                    }
+                    if (flag)
+                    {
+                        list.Add(t1);
+                        temp.Enqueue(t1);
+                    }
+                }
+            }
+        }
+        static List<List<int[]>> countComb()
+        {
+            List < List < int[] >> listCombin = new List<List<int[]>>();
+            for (int x = 0; x < board.Columns; ++x)
+            {
+                for (int y = 0; y < board.Rows; ++y)
+                {
+                    if (board.Cells[x,y].IsAlive)
+                    {
+                        List<int[]> combin = new List<int[]>();
+                        findComb(combin, x, y);
+                        bool flag = true;
+                        foreach (var list in listCombin)
+                        {
+                            foreach(var a in list)
+                            {
+                                if (a[0] == combin.First()[0])
+                                {
+                                    if (a[1] == combin.First()[1])
+                                    {
+                                        flag = false;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                        if (flag)
+                        {
+                            listCombin.Add(combin);
+                        }
+                    }
+                }
+            }
+            return listCombin;
+        }
         static void Main(string[] args)
         {
+            Reset("settings.json");
+            board = new Board("save.txt");
+            Render();
+            List<List<int[]>> listCombin = countComb();
+            Console.Write("Это блок? ");
+            Console.WriteLine(isBloc(listCombin.First()));
+            Console.Write("Количество комбинаций ");
+            Console.Write(listCombin.Count);
+            Console.Write("\n");
+            Console.WriteLine("Нажмите любую кнопку");
+            Console.ReadKey();
+            foreach (var list in listCombin)
+            {
+                Console.Write("Клеток в комбинации: ");
+                Console.Write(list.Count);
+                Console.Write("\n");
+            }
+            //board.saveToFile("save.txt");
+            //for (int i = 0; i < 5; ++i)
+            //{
+            //    Console.Clear();
+            //    Render();
+            //    board.Advance();
+            //    Thread.Sleep(1000);
+            //}
+            //board = new Board("save.txt");
+            //for (int i = 0; i < 5; ++i)
+            //{
+            //    Console.Clear();
+            //    Render();
+            //    board.Advance();
+            //    Thread.Sleep(1000);
+            //}
+
             Reset();
+            bool[,] last = new bool[board.Columns, board.Rows];
+            int step = 0;
             while (true)
             {
                 Console.Clear();
                 Render();
+                for (int row = 0; row < board.Rows; row++)
+                {
+                    for (int col = 0; col < board.Columns; col++)
+                    {
+                        last[col,row] = board.Cells[col, row].IsAlive;
+                    }
+                }
+                ++step;
                 board.Advance();
-                Thread.Sleep(1000);
+                bool flag = true;
+                for (int row = 0; row < board.Rows; row++)
+                {
+                    for (int col = 0; col < board.Columns; col++)
+                    {
+                        if (last[col, row] != board.Cells[col, row].IsAlive)
+                        {
+                            flag = false;
+                        }
+                    }
+                }
+                if (flag)
+                {
+                    Console.Write("Количество итераций до стабильной фазы ");
+                    Console.WriteLine(step);
+                    break;
+                }
+                Thread.Sleep(100);
             }
+            Console.ReadKey();
         }
     }
 }
